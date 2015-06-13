@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: no
+  sudo: true
+  vars:
+    user_name: vagrant
+    user_pass: vagrant
+  roles:
+    - common
+    - web
+    - db

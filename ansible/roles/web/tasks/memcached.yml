@@ -1,0 +1,20 @@
+---
+- name: install memcached
+  yum: name=memcached state=present
+
+- name: change php.conf
+  lineinfile: |
+    dest=/etc/httpd/conf.d/php.conf
+    regexp='{{ item.regexp }}'
+    line='{{ item.line }}'
+  with_items:
+    - regexp: '^#?\s*php_value\s*session.save_handler\s*"files"'
+      line: '#php_value session.save_handler "files"'
+    - regexp: '^#?\s*php_value\s*session.save_path\s*"/var/lib/php/session"'
+      line: '#php_value session.save_path "/var/lib/php/session"'
+
+- name: create memcached config
+  copy: src=99-my_memcache.ini dest=/etc/php.d/99-my_memcache.ini owner=root group=root mode=0644
+
+- name: enable memcached
+  service: name=memcached enabled=yes

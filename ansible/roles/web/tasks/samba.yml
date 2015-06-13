@@ -1,0 +1,16 @@
+---
+- name: install samba
+  yum: name=samba state=present
+
+- name: create samba user
+  shell: echo -e "{{ user_name }}\n{{ user_pass }}\n" | pdbedit -t -a {{ user_name }}
+  changed_when: False
+
+- name: change smb.conf
+  template: src=smb.conf.j2 dest=/etc/samba/smb.conf owner=root group=root mode=0644
+
+- name: enable samba
+  service: name={{ item }} enabled=yes
+  with_items:
+    - smb
+    - nmb

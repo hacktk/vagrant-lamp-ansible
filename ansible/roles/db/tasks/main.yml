@@ -1,0 +1,38 @@
+---
+- name: install repositories
+  yum: name={{ item }} state=present
+  with_items:
+    - http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    - http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+
+- name: install mysql
+  yum: name=mysql-community-server state=present
+  register: result
+
+- name: change mysql config
+  template: src=my.cnf.j2 dest=/etc/my.cnf owner=root group=root mode=0644
+
+- name: change mysql logrotate config
+  template: src=logrotate_mysql.j2 dest=/etc/logrotate.d/mysql owner=root group=root mode=0644
+
+- name: make mysql log directory
+  file: path={{ mysql_log_dir }} state=directory owner=mysql group=mysql mode=0777
+
+- name: start mysql
+  service: name=mysqld state=started
+
+- name: enable mysql
+  service: name=mysqld enabled=yes
+
+- name: install mroonga
+  yum: name=mysql-community-mroonga state=present
+
+- name: set root password
+  command: /bin/mysql -uroot -e \
+    "SET PASSWORD FOR root@localhost=PASSWORD('root');"
+  when: result|changed
+
+- name: disallow root login remotely
+  command: /bin/mysql -uroot -proot -e \
+    "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost','127.0.0.1'); FLUSH PRIVILEGES;"
+  when: result|changed

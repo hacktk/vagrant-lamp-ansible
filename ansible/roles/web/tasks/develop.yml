@@ -1,0 +1,18 @@
+---
+- name: install git
+  yum: name=git state=present
+
+- name: create gitconfig
+  template: src=gitconfig.j2 dest=/home/{{ user_name }}/.gitconfig owner={{ user_name }} group={{ user_name }} mode=0644
+
+- name: copy git-prompt.sh
+  shell: |
+    creates=/home/{{ user_name }}/.git-prompt.sh
+    cp /usr/share/git-core/contrib/completion/git-prompt.sh /home/{{ user_name }}/.git-prompt.sh &&
+    chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.git-prompt.sh
+
+- name: change .bashrc
+  copy: src=.bashrc dest=/home/{{ user_name }}/.bashrc owner={{ user_name }} group={{ user_name }} mode=0644
+
+- name: create log colorize sed file
+  copy: src=colorize.sed dest=/home/{{ user_name }}/colorize.sed owner={{ user_name }} group={{ user_name }} mode=0755

@@ -1,0 +1,6 @@
+---
+- include: php.yml
+- include: memcached.yml
+- include: apache.yml
+- include: samba.yml
+- include: develop.yml

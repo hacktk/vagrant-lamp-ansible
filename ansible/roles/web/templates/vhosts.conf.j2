@@ -1,0 +1,119 @@
+# error log format
+ErrorLogFormat "[%t] [%l] [client %a] %M"
+
+# server app env
+SetEnv {{ env_name }} {{ env_val }}
+
+# SSL base settings
+Listen 443 https
+SSLPassPhraseDialog exec:/usr/libexec/httpd-ssl-pass-dialog
+SSLSessionCache shmcb:/run/httpd/sslcache(512000)
+SSLSessionCacheTimeout 300
+SSLRandomSeed startup file:/dev/urandom 256
+SSLRandomSeed connect builtin
+SSLCryptoDevice builtin
+SSLCertificateFile {{ cert_file }}
+SSLCertificateKeyFile {{ key_file }}
+
+# Oldest compatible clients : Firefox 1, Chrome 1, IE 7, Opera 5, Safari 1, Windows XP IE8, Android 2.3, Java 7
+SSLProtocol all -SSLv3
+SSLCipherSuite ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA
+SSLHonorCipherOrder on
+
+# OCSP Stapling, only in httpd 2.3.3 and later
+#SSLUseStapling on
+#SSLStaplingCache shmcb:/run/httpd/ocsp(128000)
+#SSLStaplingResponderTimeout 5
+#SSLStaplingReturnResponderErrors off
+
+# public
+<VirtualHost *:80>
+    ServerName {{ host_name }}:80
+    DocumentRoot {{ public_doc_root }}
+    CustomLog {{ public_log_dir }}access_log common
+    ErrorLog {{ public_log_dir }}error_log
+    <Directory "{{ public_doc_root }}">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        DirectoryIndex index.html index.htm index.php
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# public ssl
+<VirtualHost *:443>
+    SSLEngine on
+    ServerName {{ host_name }}:443
+    DocumentRoot {{ public_doc_root }}
+    CustomLog {{ public_ssl_log_dir }}access_log common
+    ErrorLog {{ public_ssl_log_dir }}error_log
+    <Directory "{{ public_doc_root }}">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        DirectoryIndex index.html index.htm index.php
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# admin
+Listen {{ admin_port }}
+<VirtualHost *:{{ admin_port }}>
+    SSLEngine on
+    ServerName {{ host_name }}:{{ admin_port }}
+    DocumentRoot {{ admin_doc_root }}
+    CustomLog {{ admin_log_dir }}access_log common
+    ErrorLog {{ admin_log_dir }}error_log
+    <Directory "{{ admin_doc_root }}">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        DirectoryIndex index.html index.htm index.php
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# development review public
+Listen {{ review_public_port }}
+<VirtualHost *:{{ review_public_port }}>
+    ServerName {{ host_name }}:{{ review_public_port }}
+    DocumentRoot {{ review_public_doc_root }}
+    CustomLog {{ review_public_log_dir }}access_log common
+    ErrorLog {{ review_public_log_dir }}error_log
+    <Directory "{{ review_public_doc_root }}">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        DirectoryIndex index.html index.htm index.php
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# development review public ssl
+Listen {{ review_public_ssl_port }}
+<VirtualHost *:{{ review_public_ssl_port }}>
+    SSLEngine on
+    ServerName {{ host_name }}:{{ review_public_ssl_port }}
+    DocumentRoot {{ review_public_doc_root }}
+    CustomLog {{ review_public_ssl_log_dir }}access_log common
+    ErrorLog {{ review_public_ssl_log_dir }}error_log
+    <Directory "{{ review_public_doc_root }}">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        DirectoryIndex index.html index.htm index.php
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# development review admin
+Listen  {{ review_admin_port }}
+<VirtualHost *:{{ review_admin_port }}>
+    SSLEngine on
+    ServerName {{ host_name }}:{{ review_admin_port }}
+    DocumentRoot {{ review_admin_doc_root }}
+    CustomLog {{ review_admin_log_dir }}access_log common
+    ErrorLog {{ review_admin_log_dir }}error_log
+    <Directory "{{ review_admin_doc_root }}">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        DirectoryIndex index.html index.htm index.php
+        Require all granted
+    </Directory>
+</VirtualHost>

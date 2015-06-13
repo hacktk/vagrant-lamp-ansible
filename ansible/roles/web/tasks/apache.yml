@@ -1,0 +1,71 @@
+---
+- name: install apache
+  yum: name={{ item }} state=present
+  with_items:
+    - httpd
+    - mod_ssl
+    - openssl
+
+- name: make ssl directory
+  file: path={{ ssl_dir }} state=directory owner=root group=root mode=0755
+
+- name: create cert files
+  shell: |
+    creates={{ cert_file }}
+    openssl req \
+      -new \
+      -newkey rsa:2048 \
+      -sha256 \
+      -nodes \
+      -x509 \
+      -days 3650 \
+      -set_serial 1 \
+      -out "{{ cert_file }}" \
+      -keyout "{{ key_file }}" \
+      -subj "/C=JP/CN={{ host_name }}"
+
+- name: change httpd.conf
+  lineinfile: |
+    dest=/etc/httpd/conf/httpd.conf
+    regexp='{{ item.regexp }}'
+    line='{{ item.line }}'
+  with_items:
+    - regexp: '^\s*User\s.*'
+      line: 'User {{ user_name }}'
+    - regexp: '^\s*Group\s.*'
+      line: 'Group {{ user_name }}'
+
+- name: create virtualhosts config
+  template: src=vhosts.conf.j2 dest=/etc/httpd/conf.d/vhosts.conf owner=root group=root mode=0644
+
+- name: delete apache conf files
+  file: path={{ item }} state=absent
+  with_items:
+    - /etc/httpd/conf.d/autoindex.conf
+    - /etc/httpd/conf.d/ssl.conf
+    - /etc/httpd/conf.d/userdir.conf
+    - /etc/httpd/conf.d/welcome.conf
+
+- name: make app_root directories
+  file: path={{ item }} state=directory owner={{ user_name }} group={{ user_name }}
+  with_items:
+    - "{{ app_root }}"
+    - "{{ public_doc_root }}"
+    - "{{ admin_doc_root }}"
+    - "{{ review_app_root }}"
+    - "{{ review_public_doc_root }}"
+    - "{{ review_admin_doc_root }}"
+
+- name: make apache log directories
+  file: path={{ item }} state=directory owner={{ user_name }} group={{ user_name }}
+  with_items:
+    - "{{ log_root }}"
+    - "{{ public_log_dir }}"
+    - "{{ public_ssl_log_dir }}"
+    - "{{ admin_log_dir }}"
+    - "{{ review_public_log_dir }}"
+    - "{{ review_public_ssl_log_dir }}"
+    - "{{ review_admin_log_dir }}"
+
+- name: enable apache
+  service: name=httpd enabled=yes

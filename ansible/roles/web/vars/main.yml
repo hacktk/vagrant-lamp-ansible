@@ -1,0 +1,19 @@
+---
+ssl_dir: /etc/httpd/conf/ssl/
+cert_file: "{{ ssl_dir }}{{ host_name }}.crt"
+key_file: "{{ ssl_dir }}{{ host_name }}.key"
+env_val: development
+admin_port: 10080
+app_root: /var/www/html/
+public_doc_root: "{{ app_root }}public_html/"
+admin_doc_root: "{{ app_root }}admin_public_html/"
+review_app_root: /var/www/review/
+review_public_doc_root: "{{ review_app_root }}public_html/"
+review_admin_doc_root: "{{ review_app_root }}admin_public_html/"
+log_root: /var/log/httpd/
+public_log_dir: "{{ log_root }}public/"
+public_ssl_log_dir: "{{ log_root }}public_ssl/"
+admin_log_dir: "{{ log_root }}admin/"
+review_public_log_dir: "{{ log_root }}review_public/"
+review_public_ssl_log_dir: "{{ log_root }}review_public_ssl/"
+review_admin_log_dir: "{{ log_root }}review_admin/"
