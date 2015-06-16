@@ -15,7 +15,7 @@
 # [36m cyan
 # [37m white
 
-s/\(^\[[^(w|e)]*\]\)/\x1b[1m\x1b[36m\1\x1b[0m/
+s/\(^\[.*\]\)/\x1b[1m\x1b[36m\1\x1b[0m/
 s/\(PHP Notice:\)/\x1b[1m\x1b[34m\1\x1b[0m/
 s/\(PHP Warning:\)/\x1b[1m\x1b[33m\1\x1b[0m/
 s/\(PHP.*error:\)/\x1b[1m\x1b[31m\1\x1b[0m/
